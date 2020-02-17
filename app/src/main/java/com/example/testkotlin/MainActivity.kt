@@ -8,10 +8,12 @@ import android.widget.Button
 import android.widget.TableRow
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
+    private var mFirebaseAnalytics: FirebaseAnalytics? = null
     var gameSize: Int? = 3
     var activePlayer = 1
     private val winCondition = 3
@@ -51,7 +53,7 @@ class MainActivity : AppCompatActivity() {
                         newCellButton.text = "O"
                         activePlayer = 1
                     }
-                    newCellButton?.isEnabled = false
+                    newCellButton.isEnabled = false
                     checkWin(i, j)
                 }
                 newRow.addView(newCellButton)
@@ -160,7 +162,7 @@ class MainActivity : AppCompatActivity() {
         for(i in 1 .. winCondition) {
             if (y + i >= gameSize!!) break
             if (x - i < 0) break
-            if (map[x - i][y + i] == player) winCount++
+            if (map[x - i][y +  i] == player) winCount++
             else break
         }
         if (winCount >= winCondition) {
@@ -176,6 +178,7 @@ class MainActivity : AppCompatActivity() {
         startBtn.setOnClickListener {
             createGame()
         }
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
     }
 
 
