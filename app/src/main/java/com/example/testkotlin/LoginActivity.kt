@@ -20,7 +20,6 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         mAuth = FirebaseAuth.getInstance()
-        myRef.child("Users").child("TESTID").setValue("TEST EMail")
 
     }
 
@@ -37,6 +36,11 @@ class LoginActivity : AppCompatActivity() {
         mAuth!!.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) {task ->
                 if (task.isSuccessful) {
+
+                    var currentUser = mAuth!!.currentUser
+                    if (currentUser != null) {
+                        myRef.child("/Users").child(splitString(currentUser.email.toString())).setValue(currentUser.uid)
+                    }
                     Toast.makeText(applicationContext, "Login done", Toast.LENGTH_LONG).show()
                     loadMain()
                 }
@@ -57,6 +61,11 @@ class LoginActivity : AppCompatActivity() {
 
             startActivity(intent)
         }
+    }
+
+    fun splitString(str: String): String {
+        var split = str.split("@")
+        return split[0]
     }
 
 }
