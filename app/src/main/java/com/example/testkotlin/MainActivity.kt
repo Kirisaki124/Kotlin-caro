@@ -10,8 +10,12 @@ import android.widget.TableRow
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.Exception
 
 
 class MainActivity : AppCompatActivity() {
@@ -188,17 +192,54 @@ class MainActivity : AppCompatActivity() {
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
         var bundle: Bundle? = intent.extras
         myEmail = bundle!!.getString("email")
+        incommingCall()
 
     }
 
     fun requestEvent(view: View){
         var userEmail = editTextEmail.text.toString()
         Toast.makeText(this, "Im in", Toast.LENGTH_LONG).show()
-        myRef.child("Users").child(userEmail).child("Request").push().setValue(myEmail)
+        myRef.child("Users").child(splitString(userEmail)).child("Request").push().setValue(myEmail)
     }
 
     fun acceptEvent(view: View){
         var userEmail = editTextEmail.text.toString()
         Toast.makeText(this, "Im in", Toast.LENGTH_LONG).show()
+        myRef.child("Users").child(splitString(userEmail)).child("Request").push().setValue(myEmail)
+
     }
+
+    fun incommingCall(){
+        myRef.child("Users").child(splitString(myEmail.toString())).child("Request")
+            .addValueEventListener(object: ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {
+                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    try {
+                        val td = p0.value as HashMap<String, Any>
+                        if (td != null) {
+                            var value: String
+                            for (key in td.keys) {
+                                value = td[key] as String
+                                editTextEmail.setText(value)
+
+                                myRef.child("Users").child(myEmail!!).child("Request").setValue(true)
+                                break
+                            }
+                        }
+                    }   catch (ex:Exception) {
+                        ex.printStackTrace()
+                    }
+                }
+            })
+    }
+
+    fun splitString(str: String): String {
+        var split = str.split("@")
+        return split[0]
+    }
+    
+
 }
