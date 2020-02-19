@@ -54,6 +54,8 @@ class MainActivity : AppCompatActivity() {
             for(j in 0 until gameSize!!) {
 
                 var newCellButton = Button(applicationContext)
+
+                newCellButton.id = i + j
                 newCellButton.setOnClickListener {
                     if (activePlayer == 1) {
                         map[i][j] = "X"
@@ -65,6 +67,8 @@ class MainActivity : AppCompatActivity() {
                         activePlayer = 1
                     }
                     newCellButton.isEnabled = false
+
+                    myRef.child("PlayerOnline").child(sessionId!!).child("$i/$j").setValue(myEmail)
                     checkWin(i, j)
                 }
                 newRow.addView(newCellButton)
@@ -78,21 +82,12 @@ class MainActivity : AppCompatActivity() {
             var size = gameSizeInput.text.toString().toInt()
             if (size >= 3) gameSize = size
         }
-
-//        original
-//        map = Array(gameSize!!) { i ->
-//            Array(gameSize!!) { j ->
-//                "the String at position $i, $j" // provide some initial value based on i and j
-//            }
-//        }
-
         map = Array(gameSize!!) {
             Array(gameSize!!) {
                 "0"
             }
         }
         createPlayground()
-//        Toast.makeText(applicationContext, "Size: $gameSize", Toast.LENGTH_LONG).show()
     }
 
     private fun checkWin(x: Int, y: Int) {
@@ -200,13 +195,16 @@ class MainActivity : AppCompatActivity() {
         var userEmail = editTextEmail.text.toString()
         Toast.makeText(this, "Im in", Toast.LENGTH_LONG).show()
         myRef.child("Users").child(splitString(userEmail)).child("Request").push().setValue(myEmail)
+        playOnline(splitString(myEmail!!) + splitString(userEmail!!))
+        playerSymbol = "X"
     }
 
     fun acceptEvent(view: View){
         var userEmail = editTextEmail.text.toString()
         Toast.makeText(this, "Im in", Toast.LENGTH_LONG).show()
         myRef.child("Users").child(splitString(userEmail)).child("Request").push().setValue(myEmail)
-
+        playOnline(splitString(userEmail!!) + splitString(myEmail!!))
+        playerSymbol = "O"
     }
 
     fun incommingCall(){
@@ -240,6 +238,56 @@ class MainActivity : AppCompatActivity() {
         var split = str.split("@")
         return split[0]
     }
-    
+
+    var sessionId: String? = null
+    var playerSymbol: String? = null
+    fun playOnline(sessionId: String) {
+        this.sessionId = sessionId
+        myRef.child("PlayerOnline").child(sessionId)
+            .addValueEventListener(object: ValueEventListener{
+                override fun onCancelled(p0: DatabaseError) {
+                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                }
+
+                override fun onDataChange(p0: DataSnapshot) {
+                    try {
+                        val td = p0.value as HashMap<String, Any>
+                        if (td != null) {
+                            var value: String
+                            for (key in td.keys) {
+                                value = td[key] as String
+                                if (value != myEmail) {
+                                    activePlayer = if (playerSymbol === "X") 1 else 2
+                                }else {
+                                    activePlayer = if (playerSymbol === "X") 2 else 1
+                                }
+                                auto(key)
+
+                            }
+                        }
+                    }   catch (ex:Exception) {
+                        ex.printStackTrace()
+                    }
+                }
+            })
+    }
+
+    fun auto(id: String){
+        val realId = (id.split("/")[0].toInt() + id.split("/")[1].toInt()) as String
+        val i = id.split("/")[0].toInt()
+        val j = id.split("/")[1].toInt()
+        val buttonId = resources.getIdentifier(realId, "id", packageName)
+        var button = findViewById<Button>(buttonId)
+        if (activePlayer == 1) {
+            map[i][j] = "X"
+            button.text = "X"
+            activePlayer = 2
+        }else if (activePlayer == 2) {
+            map[i][j] = "O"
+            button.text = "O"
+            activePlayer = 1
+        }
+
+    }
 
 }
