@@ -3,17 +3,24 @@ package com.example.testkotlin
 import android.app.Activity
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.TableRow
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
+
+    private var database = FirebaseDatabase.getInstance()
+    private var myRef = database.reference
     private var mFirebaseAnalytics: FirebaseAnalytics? = null
+    var myEmail: String ?= null
+
     var gameSize: Int? = 3
     var activePlayer = 1
     private val winCondition = 3
@@ -178,9 +185,20 @@ class MainActivity : AppCompatActivity() {
         startBtn.setOnClickListener {
             createGame()
         }
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        var bundle: Bundle? = intent.extras
+        myEmail = bundle!!.getString("email")
+
     }
 
+    fun requestEvent(view: View){
+        var userEmail = editTextEmail.text.toString()
+        Toast.makeText(this, "Im in", Toast.LENGTH_LONG).show()
+        myRef.child("Users").child(userEmail).child("Request").push().setValue(myEmail)
+    }
 
-
+    fun acceptEvent(view: View){
+        var userEmail = editTextEmail.text.toString()
+        Toast.makeText(this, "Im in", Toast.LENGTH_LONG).show()
+    }
 }

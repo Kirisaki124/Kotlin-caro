@@ -39,7 +39,7 @@ class LoginActivity : AppCompatActivity() {
 
                     var currentUser = mAuth!!.currentUser
                     if (currentUser != null) {
-                        myRef.child("/Users").child(splitString(currentUser.email.toString())).setValue(currentUser.uid)
+                        myRef.child("/Users").child(splitString(currentUser.email.toString())).child("Request").setValue(currentUser.uid)
                     }
                     Toast.makeText(applicationContext, "Login done", Toast.LENGTH_LONG).show()
                     loadMain()
